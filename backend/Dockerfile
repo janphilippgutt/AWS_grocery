@@ -19,7 +19,7 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 # Optional: make the container explicitly expose your app port (e.g. 3000 or 5000)
-EXPOSE 3000
+EXPOSE 5000
 
 # Use CMD to run your app
 CMD ["python", "run.py"]

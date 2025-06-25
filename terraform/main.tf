@@ -72,6 +72,17 @@ module "bastion" {
   key_name           = var.key_name
 }
 
+data "template_file" "env_file" {
+  template = file("${path.module}/modules/app_instance/user_data.env.tpl")
+  vars = {
+    jwt_secret_key  = var.jwt_secret_key
+    db_user         = var.db_user
+    db_password     = var.db_password
+    db_name         = var.db_name
+    db_host         = module.rds.rds_host
+    db_uri          = "postgresql://${var.db_user}:${var.db_password}@${module.rds.rds_host}:5432/${var.db_name}"
+  }
+}
 
 
 module "app_instance" {
@@ -79,22 +90,24 @@ module "app_instance" {
 
   instances = [
     {
-      name               = "app-server-1"
+      name               = "aws-grocery-app"
       ami                = data.aws_ami.ubuntu.id
       instance_type      = "t3.micro"
-      subnet_id          = module.vpc.private_subnet_ids[0]
-      security_group_ids = [module.private_ec2_sg.security_group_id]
+      subnet_id          = module.vpc.public_subnet_ids[0]
+      security_group_ids = [module.public_ec2_sg.security_group_id]
       key_name           = var.key_name
-    },
-    {
-      name               = "app-server-2"
-      ami                = data.aws_ami.ubuntu.id
-      instance_type      = "t3.micro"
-      subnet_id          = module.vpc.private_subnet_ids[1]
-      security_group_ids = [module.private_ec2_sg.security_group_id]
-      key_name           = var.key_name
+      tags               = {}
+      docker_port        = 5000
     }
   ]
+
+  app_repo_url = var.app_repo_url
+  env_file_content  = data.template_file.env_file.rendered
+  db_host            = module.rds.rds_host # Must use rds_host (without port) for compatibility with Docker env vars and database clients
+  db_name            = var.db_name
+  db_password        = var.db_password
+  db_user            = var.db_user
+  jwt_secret         = var.jwt_secret_key
 }
 
 module "bastion_sg" {
@@ -157,11 +170,49 @@ module "private_ec2_sg" {
   }
 }
 
+module "public_ec2_sg" {
+  source     = "./modules/security_group"
+  name       = "public-ec2-sg"
+  description = "Allow SSH and app port from my IP"
+  vpc_id     = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      description = "SSH from my IP"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [var.my_ip]
+    },
+    {
+      description = "App port 5000"
+      from_port   = 5000
+      to_port     = 5000
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      #cidr_blocks = [var.my_ip]
+    }
+  ]
+
+  egress_rules = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+
+  tags = {
+    Name = "public-ec2-sg"
+  }
+}
+
 
 module "rds" {
   source = "./modules/rds"
   db_name = var.db_name
-  db_username = var.db_username
+  db_user = var.db_user
   db_password = var.db_password
 
   vpc_id = module.vpc.vpc_id
