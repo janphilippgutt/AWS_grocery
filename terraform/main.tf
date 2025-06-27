@@ -62,7 +62,7 @@ module "vpc" {
   ]
 }
 
-
+# In public subnet, to ssh into it from local machine
 module "bastion" {
   source             = "./modules/bastion"
   ami                = data.aws_ami.ubuntu.id
@@ -90,13 +90,23 @@ module "app_instance" {
 
   instances = [
     {
-      name               = "aws-grocery-app"
+      name               = "aws-grocery-app-1"
       ami                = data.aws_ami.ubuntu.id
       instance_type      = "t3.micro"
       subnet_id          = module.vpc.public_subnet_ids[0]
       security_group_ids = [module.public_ec2_sg.security_group_id]
       key_name           = var.key_name
-      tags               = {}
+      tags               = {name = "instance-1"}
+      docker_port        = 5000
+    },
+    {
+      name               = "aws-grocery-app-2"
+      ami                = data.aws_ami.ubuntu.id
+      instance_type      = "t3.micro"
+      subnet_id          = module.vpc.public_subnet_ids[1]
+      security_group_ids = [module.public_ec2_sg.security_group_id]
+      key_name           = var.key_name
+      tags               = {name = "instance-2"}
       docker_port        = 5000
     }
   ]
@@ -173,7 +183,7 @@ module "private_ec2_sg" {
 module "public_ec2_sg" {
   source     = "./modules/security_group"
   name       = "public-ec2-sg"
-  description = "Allow SSH and app port from my IP"
+  description = "Allow SSH from my IP and ALB app on port 5000"
   vpc_id     = module.vpc.vpc_id
 
   ingress_rules = [
@@ -185,17 +195,18 @@ module "public_ec2_sg" {
       cidr_blocks = [var.my_ip]
     },
     {
-      description = "App port 5000"
+      description = "Allow from ALB on port 5000"
       from_port   = 5000
       to_port     = 5000
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      #cidr_blocks = [var.my_ip]
+      security_groups = [module.load_balancer.web_sg_id]
+      # cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 
   egress_rules = [
     {
+      description = "Allow all outbound"
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -217,4 +228,16 @@ module "rds" {
 
   vpc_id = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids
+}
+
+module "load_balancer" {
+  source = "./modules/load_balancer"
+  vpc_id = module.vpc.vpc_id # exposed in/ coming from modules/vpc/outputs.tf
+  public_subnets = module.vpc.public_subnet_ids ## exposed in/ coming from modules/vpc/outputs.tf
+  # instance_ids = module.app_instance.instance_ids
+  # Send a map instead, to take into account the instance ids are not know yet:
+  instance_map = {
+    "app1" = module.app_instance.instance_ids[0]
+    "app2" = module.app_instance.instance_ids[1]
+  }
 }

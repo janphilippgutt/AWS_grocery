@@ -26,3 +26,7 @@ output "bastion_public_ip" {
 output "app_instance_private_ip" {
   value = module.app_instance.private_ips
 }
+
+output "load_balancer_dns" {
+  value = module.load_balancer.load_balancer_dns
+}
