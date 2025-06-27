@@ -70,6 +70,7 @@ module "bastion" {
   subnet_id          = module.vpc.public_subnet_ids[0]
   security_group_ids = [module.bastion_sg.security_group_id]
   key_name           = var.key_name
+  tags = {name = "bastion-host"}
 }
 
 data "template_file" "env_file" {
@@ -153,7 +154,7 @@ module "bastion_sg" {
 module "private_ec2_sg" {
   source     = "./modules/security_group"
   name       = "private-ec2-sg"
-  description = "Allow SSH from bastion"
+  description = "Allow SSH from bastion and ALB to reach EC2s on port 5000"
   vpc_id     = module.vpc.vpc_id
 
   ingress_rules = [
@@ -163,6 +164,13 @@ module "private_ec2_sg" {
       to_port         = 22
       protocol        = "tcp"
       security_groups = [module.bastion_sg.security_group_id]
+    },
+    {
+      description = "Allow from ALB on port 5000"
+      from_port   = 5000
+      to_port     = 5000
+      protocol    = "tcp"
+      security_groups = [module.load_balancer.load_balancer_sg_id]
     }
   ]
 
@@ -199,7 +207,7 @@ module "public_ec2_sg" {
       from_port   = 5000
       to_port     = 5000
       protocol    = "tcp"
-      security_groups = [module.load_balancer.web_sg_id]
+      security_groups = [module.load_balancer.load_balancer_sg_id]
       # cidr_blocks = ["0.0.0.0/0"]
     }
   ]
