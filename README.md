@@ -3,7 +3,7 @@ state: June 30, 2025
 # 🏗️ GroceryMate Infrastructure (AWS + Terraform)
 
 **Note:** This repository is a fork of the Flask-based GroceryMate application, originally provided by masterschool for learning purposes. 
-The original application code and its standalone README can be found in the root directory of this project.
+The original application code and its standalone APP_README can be found in the root directory of this project.
 
 This fork documents the infrastructure I built for the application: a fully functional, **modular AWS infrastructure** provisioned with **Terraform**. It sets up a **highly available environment** that runs the application **Dockerized** behind an **Application Load Balancer (ALB)**, backed by a **PostgreSQL RDS database** and secured via a **bastion host** for administrative access.
 
