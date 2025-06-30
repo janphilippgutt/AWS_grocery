@@ -89,7 +89,8 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# Include a listener on port 80 that forwards to existing target group on port 5000:
+# Include a listener on port 80 that forwards to existing target group on port 5000
+# This solved an issue of the app running inside the container, but ALB unable to listen
 resource "aws_lb_listener" "http_80" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
