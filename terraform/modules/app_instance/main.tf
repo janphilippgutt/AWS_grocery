@@ -10,6 +10,7 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = each.value.security_group_ids
   key_name               = each.value.key_name
   associate_public_ip_address = true
+  iam_instance_profile = var.iam_instance_profile
 
   # Use .tpl (template) file because (other than .sh file) it allows Terraform to inject variables dynamically at runtime
   user_data = templatefile("${path.module}/user_data.sh.tpl", {

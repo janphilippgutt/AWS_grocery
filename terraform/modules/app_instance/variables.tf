@@ -29,3 +29,8 @@ variable "db_password" {}
 variable "jwt_secret" {}
 variable "db_name" {}
 variable "db_host" {}
+
+variable "iam_instance_profile" {
+  description = "IAM instance profile to attach"
+  type = string
+}

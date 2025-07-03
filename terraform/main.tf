@@ -119,6 +119,8 @@ module "app_instance" {
   db_password        = var.db_password
   db_user            = var.db_user
   jwt_secret         = var.jwt_secret_key
+  # Use the instance profile name created inside module.ec2_iam when launching this EC2
+  iam_instance_profile = module.ec2_iam.instance_profile_name # "instance_profile_name" being an output from  modules/iam/outputs.tf
 }
 
 module "bastion_sg" {
@@ -247,5 +249,42 @@ module "load_balancer" {
   instance_map = {
     "app1" = module.app_instance.instance_ids[0]
     "app2" = module.app_instance.instance_ids[1]
+  }
+}
+
+module "ec2_iam" {
+  source      = "./modules/iam"
+  role_name   = "grocery-app-ec2-role"
+  policy_name = "grocery-app-policy"
+
+  policy_json = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*" # Logs from this EC2 can be sent to any log group
+      },
+      {
+        Effect = "Allow",
+        Action = [
+        "S3:PutObject",
+        "S3:GetObject",
+        "S3:ListBucket"
+        ],
+        Resource = [
+        "arn:aws:s3:::<bucket-name>",
+        "arn:aws:s3:::<bucket-name>/*"
+        ]
+      }
+    ]
+  })
+
+  tags = {
+    Name = "ec2-iam-role"
   }
 }
