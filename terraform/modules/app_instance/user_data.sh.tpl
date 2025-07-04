@@ -1,4 +1,8 @@
 #!/bin/bash
+# log each command and its output
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+set -x
+
 # Update and install Docker + PostgreSQL client
 apt-get update -y
 apt-get install -y docker.io git postgresql-client

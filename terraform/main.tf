@@ -73,15 +73,25 @@ module "bastion" {
   tags = {name = "bastion-host"}
 }
 
+# Render a .env file for the Flask application running on EC2
+# This uses a template file (user_data.env.tpl) with placeholders like ${db_user}, ${s3_bucket_name}, etc.
+# The output will be passed into the EC2 instance as part of user_data.sh.tpl
+
 data "template_file" "env_file" {
+  # Path to the environment template. Reads the .env structure from the template file
   template = file("${path.module}/modules/app_instance/user_data.env.tpl")
+  # These variables will replace the placeholders in the .tpl file
   vars = {
     jwt_secret_key  = var.jwt_secret_key
     db_user         = var.db_user
     db_password     = var.db_password
     db_name         = var.db_name
-    db_host         = module.rds.rds_host
+    db_host         = module.rds.rds_host # only hostname, not full URI
     db_uri          = "postgresql://${var.db_user}:${var.db_password}@${module.rds.rds_host}:5432/${var.db_name}"
+
+    # S3 config (used by app to upload avatar images)
+    s3_bucket_name  = module.s3_bucket.bucket_name # output from s3 module
+    s3_region       = var.region # declared in root variables.tf
   }
 }
 
@@ -91,7 +101,7 @@ module "app_instance" {
 
   instances = [
     {
-      name               = "aws-grocery-app-1"
+      name               = "grocerymate-app-1"
       ami                = data.aws_ami.ubuntu.id
       instance_type      = "t3.micro"
       subnet_id          = module.vpc.public_subnet_ids[0]
@@ -101,7 +111,7 @@ module "app_instance" {
       docker_port        = 5000
     },
     {
-      name               = "aws-grocery-app-2"
+      name               = "grocerymate-app-2"
       ami                = data.aws_ami.ubuntu.id
       instance_type      = "t3.micro"
       subnet_id          = module.vpc.public_subnet_ids[1]
@@ -113,14 +123,19 @@ module "app_instance" {
   ]
 
   app_repo_url = var.app_repo_url
+
+  # The rendered string output, which gets passed into the EC2 user_data
   env_file_content  = data.template_file.env_file.rendered
   db_host            = module.rds.rds_host # Must use rds_host (without port) for compatibility with Docker env vars and database clients
   db_name            = var.db_name
   db_password        = var.db_password
   db_user            = var.db_user
   jwt_secret         = var.jwt_secret_key
+
   # Use the instance profile name created inside module.ec2_iam when launching this EC2
   iam_instance_profile = module.ec2_iam.instance_profile_name # "instance_profile_name" being an output from  modules/iam/outputs.tf
+  s3_bucket_name = module.s3_bucket.bucket_name
+  s3_region = var.region
 }
 
 module "bastion_sg" {
@@ -254,8 +269,8 @@ module "load_balancer" {
 
 module "ec2_iam" {
   source      = "./modules/iam"
-  role_name   = "grocery-app-ec2-role"
-  policy_name = "grocery-app-policy"
+  role_name   = "grocerymate-ec2-role"
+  policy_name = "grocerymate-policy"
 
   policy_json = jsonencode({
     Version = "2012-10-17",
@@ -277,8 +292,8 @@ module "ec2_iam" {
         "S3:ListBucket"
         ],
         Resource = [
-        "arn:aws:s3:::<bucket-name>",
-        "arn:aws:s3:::<bucket-name>/*"
+        module.s3_bucket.bucket_arn,
+        "${module.s3_bucket.bucket_arn}/*"
         ]
       }
     ]
@@ -288,3 +303,25 @@ module "ec2_iam" {
     Name = "ec2-iam-role"
   }
 }
+
+module "s3_bucket" {
+  source = "./modules/s3"
+
+  bucket = "grocerymate-avatars-${random_id.bucket_suffix.hex}"
+  tags = {
+    Name = "avatars-bucket"
+  }
+}
+
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+resource "null_resource" "upload_default_avatar" {
+  depends_on = [module.s3_bucket]
+
+  provisioner "local-exec" {
+    command = "aws s3 cp ../backend/avatar/user_default.png s3://${module.s3_bucket.bucket_name}/avatars/user_default.png --region ${var.region}"
+    }
+  }
+

@@ -30,6 +30,17 @@ variable "jwt_secret" {}
 variable "db_name" {}
 variable "db_host" {}
 
+variable "s3_bucket_name" {
+  description = "Name of S3 bucket for app"
+  type        = string
+}
+
+variable "s3_region" {
+  description = "Region of S3 bucket"
+  type        = string
+}
+
+
 variable "iam_instance_profile" {
   description = "IAM instance profile to attach"
   type = string

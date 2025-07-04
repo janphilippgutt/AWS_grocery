@@ -25,6 +25,8 @@ resource "aws_instance" "this" {
     db_host      = var.db_host
     db_uri       = "postgresql://${var.db_user}:${var.db_password}@${var.db_host}:5432/${var.db_name}"
     env_file_content = var.env_file_content
+    s3_bucket_name = var.s3_bucket_name
+    s3_region      = var.s3_region
   })
 
   tags = merge(

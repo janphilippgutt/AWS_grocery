@@ -4,3 +4,6 @@ POSTGRES_PASSWORD=${db_password}
 POSTGRES_DB=${db_name}
 POSTGRES_HOST=${db_host}
 POSTGRES_URI=${db_uri}
+USE_S3_STORAGE=true
+S3_BUCKET_NAME=${s3_bucket_name}
+S3_REGION=${s3_region}
