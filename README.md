@@ -2,11 +2,12 @@ state: July 04, 2025
 
 # 🏗️ GroceryMate Infrastructure (AWS + Terraform)
 
-**Note:** This repository is a fork of the Flask-based GroceryMate application, originally provided by masterschool for learning purposes. 
+**Note:** This repository is a fork of the Flask-based GroceryMate application, originally provided by Masterschool for learning purposes. 
 The original application code and its standalone APP_README can be found in the root directory of this project.
 
-This fork documents the infrastructure I built for the application: a fully functional, **modular AWS infrastructure** provisioned with **Terraform**. It sets up a **highly available environment** that runs the application **Dockerized** behind an **Application Load Balancer (ALB)**, backed by a **PostgreSQL RDS database** and secured via a **bastion host** for administrative access.
-The app interacts with a **S3 bucket** that is **automatically provisioned** with a default image uploaded from the repo at launch.  
+This fork documents the infrastructure I built for the application: A fully functional, **modular AWS infrastructure** provisioned with **Terraform**. 
+It sets up a **highly available environment** that runs the application **dockerized** behind an **Application Load Balancer (ALB)**, backed by a **PostgreSQL RDS database** and secured via a **bastion host** for administrative access.
+The app interacts with a **S3 Bucket** that is **automatically provisioned** with a default image uploaded from the repo at launch.  
 An integrated **IAM module** helps **customize policies as required**. 
 
 In this setup, **database creation and initial population are fully automated** using Terraform. A key focus of this project is designing each infrastructure component as a reusable module. These modules are invoked from ```root/main.tf``` with custom values, making the infrastructure highly adaptable and easy to extend.
@@ -23,16 +24,19 @@ The provided infrastructure has been tested for full functionality. Additional f
 
 ## 🧱 Infrastructure Components
 
-| Component           | Description                                                              |
-|---------------------|--------------------------------------------------------------------------|
-| **VPC**             | Custom VPC with public and private subnets across 2 AZs                  |
-| **EC2**             | Two instances running the app in Docker containers                       |
-| **ALB**             | Application Load Balancer distributing traffic on port 80                |
-| **RDS**             | PostgreSQL instance hosted in private subnets                            |
-| **Bastion Host**    | Jump box for SSH into private resources                                  |
-| **Security Groups** | Fine-grained access rules between components                             |
-| **S3**              | S3 bucket with private access for avatar image storage                   |
-| **IAM**             | IAM role and instance profile to allow EC2 instances secure access to S3 |
+This project uses a modular Terraform setup. Each infrastructure component is managed through a reusable module, instantiated with project-specific inputs in main.tf.
+
+| Component                | Description                                                             |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `vpc` module             | Custom VPC with public/private subnets across 2 AZs                     |
+| `app_instance` module    | Two EC2 instances running the app in Docker containers (with S3 access) |
+| `alb` module             | Application Load Balancer routing HTTP traffic across EC2s              |
+| `rds` module             | PostgreSQL database deployed in private subnets                         |
+| `bastion` module         | Bastion host (jump box) for secure SSH into private resources           |
+| `security_groups` module | Access control for traffic between components (e.g., EC2 <-> RDS)       |
+| `s3_bucket` module       | S3 bucket with private access, versioning, and default avatar upload    |
+| `iam` module             | IAM role + instance profile granting EC2 permission to access S3        |
+
 
 ---
 
@@ -94,13 +98,9 @@ terraform apply
 
 ## 🛠️ Next Steps
 
-Add IAM roles and least-privilege policies
-
 Integrate Auto Scaling Group
 
 Add CloudWatch logs and metrics
-
-CI/CD pipeline for automated deployment
 
 Define dev and prod environments
 
