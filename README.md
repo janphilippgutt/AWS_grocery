@@ -11,7 +11,7 @@ An integrated **IAM module** helps **customize policies as required**.
 
 In this setup, **database creation and initial population are fully automated** using Terraform. A key focus of this project is designing each infrastructure component as a reusable module. These modules are invoked from ```root/main.tf``` with custom values, making the infrastructure highly adaptable and easy to extend.
 
-The provided infrastructure has been tested for full functionality. Additional features—such as IAM policies, autoscaling, and environment separation—are planned and will be added soon.
+The provided infrastructure has been tested for full functionality. Additional features—such as autoscaling and environment separation—are planned and will be added soon.
 
 ---
 
