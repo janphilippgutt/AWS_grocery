@@ -25,7 +25,7 @@ The app interacts with a private S3 bucket, which is:
 
 - Created automatically in the same region as the EC2 instances
 
-- Provisioned with a default avatar image at launch_
+- Provisioned with a default avatar image at launch
 
 **Secure Access via Bastion Host**
 
@@ -44,6 +44,7 @@ All modules are called from root/main.tf using tailored inputs.
 
 
 ✅ The infrastructure has been tested and is fully functional.
+
 🛠️ Future improvements like autoscaling and environment separation are already planned.
 
 ---
