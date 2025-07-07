@@ -1,7 +1,7 @@
 
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket
-
+  #force_destroy = true   Can be enabled for deleting the bucket with terraform destroy
   tags = var.tags
 }
 

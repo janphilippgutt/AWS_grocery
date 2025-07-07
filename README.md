@@ -1,24 +1,56 @@
-state: July 04, 2025
+state: July 07, 2025
 
 # 🏗️ GroceryMate Infrastructure (AWS + Terraform)
 
 **Note:** This repository is a fork of the Flask-based GroceryMate application, originally provided by Masterschool for learning purposes. 
-The original application code and its standalone APP_README can be found in the root directory of this project.
+The original application code and its standalone APP_README can be found in the root directory of this project. My fork documents the infrastructure I built for the application — a fully functional, modular AWS environment provisioned with Terraform.
 
-This fork documents the infrastructure I built for the application: A fully functional, **modular AWS infrastructure** provisioned with **Terraform**. 
-It sets up a **highly available environment** that runs the application **dockerized** behind an **Application Load Balancer (ALB)**, backed by a **PostgreSQL RDS database** and secured via a **bastion host** for administrative access.
-The app interacts with a **S3 Bucket** that is **automatically provisioned** with a default image uploaded from the repo at launch.  
-An integrated **IAM module** helps **customize policies as required**. 
+## Key Features
 
-In this setup, **database creation and initial population are fully automated** using Terraform. A key focus of this project is designing each infrastructure component as a reusable module. These modules are invoked from ```root/main.tf``` with custom values, making the infrastructure highly adaptable and easy to extend.
+**Modular Infrastructure**
 
-The provided infrastructure has been tested for full functionality. Additional features—such as autoscaling and environment separation—are planned and will be added soon.
+Each AWS component is defined as a reusable Terraform module, making the setup clean, extensible, and easy to manage.
+
+**High Availability**
+
+The application runs in Docker containers behind an Application Load Balancer (ALB), with multiple EC2 instances across availability zones.
+
+**Automated RDS Setup**
+
+A PostgreSQL RDS instance is provisioned in a private subnet, with automated database creation and initial population handled by Terraform.
+
+**S3 Bucket Integration**
+
+The app interacts with a private S3 bucket, which is:
+
+- Created automatically in the same region as the EC2 instances
+
+- Provisioned with a default avatar image at launch_
+
+**Secure Access via Bastion Host**
+
+A bastion host is deployed for secure SSH access to private resources.
+
+**Customizable IAM Policies**
+
+An integrated IAM module provides fine-grained access control and lets you customize permissions for each component.
+
+## Developer Focus
+
+Environment Variables like S3 credentials and DB connection strings are injected at runtime.
+
+All modules are called from root/main.tf using tailored inputs.
+
+
+
+✅ The infrastructure has been tested and is fully functional.
+🛠️ Future improvements like autoscaling and environment separation are already planned.
 
 ---
 
 ## 📐 Architecture Overview
 
-- Diagram to be added 
+<img width="633" height="735" alt="Image" src="https://github.com/user-attachments/assets/5895fcaa-38f4-4c3d-8183-dbd552cf4ae2" />
 
 ---
 
