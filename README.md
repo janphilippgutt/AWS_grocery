@@ -52,7 +52,7 @@ All modules are called from root/main.tf using tailored inputs.
 
 <img width="820" height="756" alt="Image" src="https://github.com/user-attachments/assets/9ab468c7-7fc5-45ad-baa0-bef368fecc9c" />
 
-**Note: Designed for learning and testing: EC2 instances are currently deployed in a public subnet, but the setup can easily be adapted for production with private subnets and NAT Gateway support.**
+**Note: Designed for learning and testing: EC2 instances are currently deployed in public subnets, but the setup can easily be adapted for production with private subnets and NAT Gateway support.**
 
 
 ---
