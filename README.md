@@ -1,4 +1,4 @@
-state: July 07, 2025
+state: July 08, 2025
 
 # 🏗️ GroceryMate Infrastructure (AWS + Terraform)
 
@@ -45,13 +45,12 @@ All modules are called from root/main.tf using tailored inputs.
 
 ✅ The infrastructure has been tested and is fully functional.
 
-🛠️ Future improvements like autoscaling and environment separation are already planned.
 
 ---
 
 ## 📐 Architecture Overview
 
-<img width="633" height="735" alt="Image" src="https://github.com/user-attachments/assets/5895fcaa-38f4-4c3d-8183-dbd552cf4ae2" />
+<img width="820" height="756" alt="Image" src="https://github.com/user-attachments/assets/9ab468c7-7fc5-45ad-baa0-bef368fecc9c" />
 
 ---
 
